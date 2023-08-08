@@ -15,7 +15,7 @@ if [ ! -e "$PGPOOLCONF" ]; then
   exit
 fi
 
-delegate_ip=`cat $PGPOOLCONF | grep delegate_IP | awk -F\' '{print $2}'` 2>/dev/null
+delegate_ip=`cat $PGPOOLCONF | grep delegate_ip | awk -F\' '{print $2}'` 2>/dev/null
 
 if [ ! -n "$delegate_ip" ]; then
   echo  0

@@ -15,13 +15,13 @@ if [ $? -ne 0 ]; then
 	exit
 fi
 
-replication_mode=`echo "$config" | awk -F, '$1 ~ /replication_mode/ {print $2}'`
+replication_mode=`echo "$config" | awk -F, '$1 ~ /backend_clustering_mode/ {print $2}'`
 
-if [ $replication_mode == 1 ]; then
+if [ $replication_mode -eq 1 ]; then
 	MODE=replication
 else
 	master_slave_mode=`echo "$config" | awk -F, '$1 ~ /master_slave_mode/ {print $2}'`
-	if [ $master_slave_mode == 1 ]; then
+	if [ $master_slave_mode -eq 1 ]; then
 		MODE=`echo "$config" | awk -F, '$1 ~ /master_slave_sub_mode/ {print $2}'`
 	else
 		MODE=connection_pool

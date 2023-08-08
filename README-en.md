@@ -1,4 +1,171 @@
-**Maintenance for pg_monz ended on October 31, 2021.**
+**pg_monz - Template for monitoring PostgreSQL and PgPool**
+
+This repository was a fork of the [pg_monz](https://github.com/pg-monz/pg_monz.git) project, which until now was the only project available to the community that really proposed monitoring the two tools together.
+However, some time ago, about 2 years ago, the project was not updated and many issues ended up being forgotten.
+Faced with my need for use, I was able to make changes to the codes in order to put the monitoring to work.
+And this is the result of some efforts.
+
+The version of zabbix used was 5.0 LTS, with PostgreSQL v15.3 and PgPool v4.4.
+
+## Installation
+
+1. Requirements:
+
+- Zabbix server version 2.0+
+- monitored PostgreSQL 9.2+
+- monitored pgpool-II 3.4.0
+- installing zabbix_agentd to PostgreSQL and pgpool-II host.
+- installing zabbix_sender to PostgreSQL and pgpool-II host.
+- ServerActive setting in zabbix_agentd.conf (zabbix_sender read this file)
+- psql command(and serch path setting) on each PostgreSQL/pgpool server
+
+2. Import monitoring templates into Zabbix Web.
+
+   Template_App_PostgreSQL.xml
+   Template_App_PostgreSQL_SR.xml
+   Template_App_PostgreSQL_SR_Cluster.xml
+   Template_App_pgpool-II.xml
+   Template_App_pgpool-II-36.xml
+   Template_App_pgpool-II_watchdog.xml
+
+3. Copy the files from the `usr-local-etc` folder (pgsql_funcs.conf and pgpool_funcs.conf) to `/usr/local/etc`:
+
+```bash 
+  #cp usr-local-etc/* /usr/local/etc
+
+```
+
+Default values of variables from the `pgsql_funcs.conf` file
+
+```bash
+    ----
+    PGHOST=127.0.0.1
+    PGPORT=5432
+    PGROLE=postgres
+    PGDATABASE=postgres
+    ----
+```
+
+Default values of variables from the `pgpool_funcs.conf` file
+```bash
+    ----
+    PGPOOLHOST=127.0.0.1
+    PGPOOLPORT=9999
+    PGPOOLROLE=postgres
+    PGPOOLDATABASE=postgres
+    PGPOOLCONF=/usr/local/etc/pgpool.conf
+    ----
+```
+
+> The definition of the configuration directory is done via the macro variable in the template.
+```json
+       {$PGSCRIPT_CONFDIR}
+       {$PGPOOLSCRIPTS_CONFDIR}
+```
+
+4. Copy the files from the `usr-local-bin` folder to the `/usr/local/bin`:
+
+```bash
+   #cp usr-local-bin/* /usr/local/bin
+```
+
+> The definition of the execution script directory is done via the macro variable in the template.
+```json
+       {$PGSCRIPTDIR}
+       {$PGPOOLSCRIPTDIR}
+```
+
+5. Copy the user parameter configuration file for the Zabbix agent `userparameter_pgsql.conf` to the specified location on the machine that has the agent installed.
+
+For example, if the Zabbix agent is installed in `/etc/zabbix/`, copy the file to the following location:
+
+```bash
+cp zabbix_agentd.d/userparameter_pgpsql.conf /etc/zabbix/zabbix_agentd.conf.d/userparameter_pgsql.conf
+```
+
+> Make sure that `Include` for this folder is activated in the agent configuration file, as shown in the example below:
+```bash
+ Include=/etc/zabbix/zabbix_agentd.conf.d/
+```
+
+6. Defining groups using Zabbix Web.
+
+- Create the "PostgreSQL" group and add the PostgreSQL Host to the created group.
+- Create the "pgpool" group and add the pgpool-II host to the "pgpool" group.
+
+> Each group is referenced in the Template_App_PostgreSQL_SR_Cluster.xml and Template_App_pgpool-II_watchdog.xml templates using the `{$HOST_GROUP}` variable in the template macro.
+
+7. Check the directory path of the zabbix_agentd.conf file.
+
+If the `zabbix_agentd.conf` file is not in `/etc/zabbix/zabbix_agentd.conf`, add the correct path as value in the `{$ZABBIX_AGENTD_CONF}` macro variable.
+
+> Example of how to set `zabbix_agentd.conf` file path in macro variable in host or template.
+```bash
+     {$ZABBIX_AGENTD_CONF} => /etc/zabbix/zabbix_agentd.conf
+
+```
+
+8. Link templates to hosts.
+
+Link "Template App PostgreSQL SR" for PostgreSQL hosts.
+
+Link "Template App pgpool-II" for pgpool-II hosts.
+
+"Template App PostgreSQL SR Cluster"/ "Template App pgpool-II-watchdog" are simply counting:
+
+- the running service number (sr/pgpool-II),
+- the main server number (sr),
+- the standby server number (sr),
+- the delegate_ip number (pgpool-II),
+
+Using aggregate key in zabbix `{$HOST_GROUP}`.
+
+> If you want to monitor split-brain or number of primary servers, just link above templates to arbitrary host.
+> example: "PostgreSQL Cluster" as virtual host.
+
+## Tips
+
+Authentication in PostgreSQL and PgPool services can be done in 2 (two) ways, the first indicating the pgpass file inside the `pgsql_funcs.conf` file and the second way is by placing the pgpass to be used in the Zabbix user session.
+I'll show both ways, I used pgpass on the Zabbix user and it worked just fine.
+
+### First way:
+
+Add the line below in the `pgsql_funcs.conf` file:
+```bash
+export PGPASSFILE=/usr/local/etc/pgpass
+```
+
+Create the `/usr/local/etc/pgpass` file with your favorite editor, and put the connection information in the pattern below:
+
+```bash
+127.0.0.1:5432:*:postgres:somepassword
+```
+
+After that give read-only permission on the file and also to the zabbix user.
+
+```bash
+chmod 0600 /usr/local/etc/pgpass
+chown zabbix:zabbix /usr/local/etc/pgpass
+```
+
+### Second way:
+
+Create the `/home/zabbix/.pgpass` file with the editor of your choice, and put the connection information in the pattern below:
+
+```bash
+127.0.0.1:5432:*:postgres:somepassword
+```
+
+After that give read-only permission on the file and also to the zabbix user.
+
+```bash
+chmod 0600 /home/zabbix/.pgpass
+chown zabbix:zabbix /home/zabbix/.pgpass
+```
+
+Changing the permission is important because the file is created with the current user and thus the permissions are inherited from that user.
+
+This form of configuration facilitates because it is already a practice used for connection via session using the psql utility.
 
 pg_monz 2.0
 ============================

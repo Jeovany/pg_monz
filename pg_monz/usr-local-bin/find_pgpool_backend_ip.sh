@@ -15,7 +15,7 @@ if [ $? -ne 0 ]; then
 	exit
 fi
 
-replication_mode=`echo "$config" | awk -F, '$1 ~ /replication_mode/ {print $2}'`
+replication_mode=`echo "$config" | awk -F, '$1 ~ /backend_clustering_mode/ {print $2}'`
 
 if [ $replication_mode == 1 ]; then
 	MODE=replication
