@@ -1,4 +1,4 @@
-**pg_monz - Template for monitoring PostgreSQL and PgPool**
+# **pg_monz - Template for monitoring PostgreSQL and PgPool**
 
 This repository was a fork of the [pg_monz](https://github.com/pg-monz/pg_monz.git) project, which until now was the only project available to the community that really proposed monitoring the two tools together.
 However, some time ago, about 2 years ago, the project was not updated and many issues ended up being forgotten.
@@ -58,7 +58,7 @@ Default values of variables from the `pgpool_funcs.conf` file
 ```
 
 > The definition of the configuration directory is done via the macro variable in the template.
-```json
+```bash
        {$PGSCRIPT_CONFDIR}
        {$PGPOOLSCRIPTS_CONFDIR}
 ```
@@ -70,7 +70,7 @@ Default values of variables from the `pgpool_funcs.conf` file
 ```
 
 > The definition of the execution script directory is done via the macro variable in the template.
-```json
+```bash
        {$PGSCRIPTDIR}
        {$PGPOOLSCRIPTDIR}
 ```
