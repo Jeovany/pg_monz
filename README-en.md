@@ -1,8 +1,11 @@
 # **pg_monz - Template for monitoring PostgreSQL and PgPool**
 
 This repository was a fork of the [pg_monz](https://github.com/pg-monz/pg_monz.git) project, which until now was the only project available to the community that really proposed monitoring the two tools together.
+
 However, some time ago, about 2 years ago, the project was not updated and many issues ended up being forgotten.
+
 Faced with my need for use, I was able to make changes to the codes in order to put the monitoring to work.
+
 And this is the result of some efforts.
 
 The version of zabbix used was 5.0 LTS, with PostgreSQL v15.3 and PgPool v4.4.
